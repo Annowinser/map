@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Marktkaart</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+html, body {
+    margin: 0;
+    height: 100%;
+}
+#map {
+    height: 100%;
+}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// ===============================
+// BEGRENZING
+// ===============================
+var southWest = L.latLng(51.167348025809815, 5.810902458250179);
+var northEast = L.latLng(51.1762948608059, 5.828233349978598);
+var bounds = L.latLngBounds(southWest, northEast);
+
+// ===============================
+// KAART
+// ===============================
+var map = L.map('map', {
+    minZoom: 17,
+    maxZoom: 19,
+    maxBounds: bounds,
+    maxBoundsViscosity: 1.0
+});
+
+map.fitBounds(bounds);
+
+// Tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+// ===============================
+// MARKTKRAAM ICON
+// ===============================
+var marktIcon = L.icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png',
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
+});
+
+// ===============================
+// GEBRUIKER ICON (MANNETJE)
+// ===============================
+var userIcon = L.icon({
+    iconUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkME51ceunJt_DxAIzmatbkAj2JXJEPx8X2A&s',
+    iconSize: [50, 50],
+    iconAnchor: [17, 35],
+    popupAnchor: [0, -30]
+});
+
+// ===============================
+// POI'S
+// ===============================
+var pois = [
+    {
+        naam: "narcisstraat 10",
+        beschrijving: "Verhaeg",
+        lat: 51.17175856936979,
+        lng: 5.825226243750793
+    },
+    {
+        naam: "Viskraam",
+        beschrijving: "Dagverse vis",
+        lat: 51.1740,
+        lng: 5.8220
+    },
+    {
+        naam: "Kaasboer",
+        beschrijving: "Ambachtelijke kazen",
+        lat: 51.1705,
+        lng: 5.8185
+    }
+];
+
+pois.forEach(function(poi) {
+    L.marker([poi.lat, poi.lng], { icon: marktIcon })
+        .addTo(map)
+        .bindPopup("<b>" + poi.naam + "</b><br>" + poi.beschrijving);
+});
+
+// ===============================
+// LIVE GEBRUIKERSPOSITIE
+// ===============================
+var userMarker = null;
+
+if (navigator.geolocation) {
+
+    navigator.geolocation.watchPosition(function(position) {
+
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+
+        var userLatLng = L.latLng(lat, lng);
+
+        if (bounds.contains(userLatLng)) {
+
+            if (!userMarker) {
+                userMarker = L.marker(userLatLng, { icon: userIcon })
+                    .addTo(map)
+                    .bindPopup("U bent hier");
+            } else {
+                userMarker.setLatLng(userLatLng);
+            }
+
+        }
+
+    }, function(error) {
+        console.log("Geolocatie fout:", error.message);
+    }, {
+        enableHighAccuracy: true
+    });
+
+}
+</script>
+
+</body>
+</html>
